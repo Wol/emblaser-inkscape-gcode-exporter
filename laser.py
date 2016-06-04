@@ -88,7 +88,7 @@ defaults = {
 'header': """
 G90
 """,
-'footer': """G1 X0 Y0
+'footer': """G28
 M18
 """
 }
@@ -2643,8 +2643,9 @@ class laser_gcode(inkex.Effect):
         
         parts = layer_name.split(' ')[-1]
         laser_power, laser_speed = parts.split('@', 1)
-
-        g += "##### Power: %s Speed: %s #####\n\n" % (laser_power, laser_speed)
+        actual_power = int((float(laser_speed) * float(laser_power)) / 1000)
+        
+        g += "##### Effective Power: %s Actual Power: %f Speed: %s #####\n\n" % (laser_power, actual_power, laser_speed)
 
         
         lg, f =  'G00', "F%s"%laser_speed
@@ -2658,7 +2659,7 @@ class laser_gcode(inkex.Effect):
             print_(curve[i])
             feed = f if lg not in ['G01','G02','G03'] else ''
             if s[1]    == 'move':
-                g += "G1 " + c(si[0]) + "\n" + self.options.laser_command + " S" + str(int(laser_power)) + "\n"
+                g += "G1 " + c(si[0]) + "\n" + self.options.laser_command + " S" + str(int(actual_power)) + "\n"
                 lg = 'G00'
             elif s[1] == 'end':
                 g += gcode_after + "\n"
